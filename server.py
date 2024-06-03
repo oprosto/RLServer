@@ -2,13 +2,15 @@ from faker import Faker
 from email.parser import Parser
 from functools import lru_cache
 from urllib.parse import parse_qs, urlparse
+from random import randint
 import json
-import socket
 import sys
+import socket
 
 
 MAX_LINE = 64*1024
 MAX_HEADERS = 100
+PREGEN_CHARACTERS = 100
 
 class HTTPError(Exception):
   def __init__(self, status, reason, body=None):
@@ -31,7 +33,27 @@ class Request:
     self.version = version
     self.rfile = rfile
     self.headers = headers
-  
+class Pregen:
+  def generate_characters(amount):
+    users = {}
+    for person in range(amount):
+      generator = Faker()
+      name = generator.name()
+      address = generator.address()
+      age = randint(0,100)
+      if (randint(0,1) == 0):
+        premium_user = False
+      else:
+        premium_user = True
+      users[person] = { 'id': person,
+                        'name': name,
+                        'address' : address,
+                        'age': age,
+                        'premium_user' : premium_user
+                      }
+    
+    return users
+    
   @property
   def path(self):
     return self.url.path
@@ -52,7 +74,10 @@ class MyHTTPServer:
     self._host = host
     self._port = port
     self._server_name = server_name
+    #self._users = Pregen.generate_characters(PREGEN_CHARACTERS)
     self._users = {}
+
+
 
   def serve_forever(self):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM, proto=0) as serv_sock:
