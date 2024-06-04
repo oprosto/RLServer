@@ -33,6 +33,20 @@ class Request:
     self.version = version
     self.rfile = rfile
     self.headers = headers
+  @property
+  def path(self):
+    return self.url.path
+
+  @property
+  @lru_cache(maxsize=None)
+  def query(self):
+    return parse_qs(self.url.query)
+
+  @property
+  @lru_cache(maxsize=None)
+  def url(self):
+    return urlparse(self.target)  
+
 class Pregen:
   def generate_characters(amount):
     users = {}
@@ -54,19 +68,6 @@ class Pregen:
     
     return users
     
-@property
-def path(self):
-  return self.url.path
-
-@property
-@lru_cache(maxsize=None)
-def query(self):
-  return parse_qs(self.url.query)
-
-@property
-@lru_cache(maxsize=None)
-def url(self):
-  return urlparse(self.target)  
 
 
 class MyHTTPServer:
