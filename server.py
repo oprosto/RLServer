@@ -177,9 +177,16 @@ class MyHTTPServer:
   
   def handle_get_users(self, req):
     accept = req.headers.get('Accept')
+
+    amount_users = int(req.query['number'][0])
+    good_users = self._users[0:amount_users]
+    #good_users = list()
+    #for i in range(amount_users):
+    #  good_users.append(self._users[i])
+    
     if 'application/json' in accept:
       content_type = 'application/json; charset=utf-8'
-      body = json.dumps(self._users)
+      body = json.dumps(good_users)
     else:
       return Response(406, 'Not Acceptable')
     
