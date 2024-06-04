@@ -75,8 +75,8 @@ class MyHTTPServer:
     self._host = host
     self._port = port
     self._server_name = server_name
-    #self._users = Pregen.generate_characters(PREGEN_CHARACTERS)
-    self._users = {}
+    self._users = Pregen.generate_characters(PREGEN_CHARACTERS)
+    #self._users = {}
 
 
 
