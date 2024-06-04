@@ -54,19 +54,19 @@ class Pregen:
     
     return users
     
-  @property
-  def path(self):
-    return self.url.path
-  
-  @property
-  @lru_cache(maxsize=None)
-  def query(self):
-    return parse_qs(self.url.query)
+@property
+def path(self):
+  return self.url.path
 
-  @property
-  @lru_cache(maxsize=None)
-  def url(self):
-    return urlparse(self.target)  
+@property
+@lru_cache(maxsize=None)
+def query(self):
+  return parse_qs(self.url.query)
+
+@property
+@lru_cache(maxsize=None)
+def url(self):
+  return urlparse(self.target)  
 
 
 class MyHTTPServer:
@@ -152,7 +152,7 @@ class MyHTTPServer:
   def handle_request(self, req):
     if req.path == '/users' and req.method == 'POST':
       return self.handle_post_users(req)
-
+    
     if req.path == '/users' and req.method == 'GET':
       return self.handle_get_users(req)
 
