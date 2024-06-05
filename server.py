@@ -6,6 +6,7 @@ from random import randint
 import json
 import sys
 import socket
+import traceback
 
 
 MAX_LINE = 64*1024
@@ -33,6 +34,11 @@ class Request:
     self.version = version
     self.rfile = rfile
     self.headers = headers
+  def body(self):
+    size = self.headers.get('Content-Length')
+    if not size:
+      return None
+    return self.rfile.read(size)
   @property
   def path(self):
     return self.url.path
@@ -49,7 +55,7 @@ class Request:
 
 class Pregen:
   def generate_characters(amount):
-    users = {}
+    users = []
     for person in range(amount):
       generator = Faker()
       name = generator.name()
@@ -59,12 +65,12 @@ class Pregen:
         premium_user = False
       else:
         premium_user = True
-      users[person] = { 'id': person,
+      users.append({ 'id': person,
                         'name': name,
                         'address' : address,
                         'age': age,
                         'premium_user' : premium_user
-                      }
+                      })
     
     return users
     
@@ -90,6 +96,7 @@ class MyHTTPServer:
         try:
           self.serve_client(conn)
         except Exception as e:
+          traceback.print_exc()
           print('Client serving failed', e)
 
   def serve_client(self, conn):
@@ -98,8 +105,10 @@ class MyHTTPServer:
       resp = self.handle_request(req)
       self.send_response(conn, resp)
     except ConnectionResetError:
+      traceback.print_exc()
       conn = None
     except Exception as e:
+      traceback.print_exc()
       self.send_error(conn, e)
 
     if conn:
@@ -114,6 +123,8 @@ class MyHTTPServer:
       raise Exception("Bad request")
     #if host not in (self._server_name, f'{self._server_name}:{self._port}'):       Нужна ли эта проверка?
     #  raise Exception("Not found")
+    rfile.flush()
+    rfile.close()
     return Request(method, target, ver, headers, rfile)
   
   def parse_headers(self, rfile):
@@ -167,12 +178,12 @@ class MyHTTPServer:
   def handle_post_users(self, req):
     print('aboba')
     user_id = len(self._users) + 1
-    self._users[user_id] = {'id': user_id,
-                            'name': req.query['name'][0],
-                            'address' : req.query['address'][0],
-                            'age': req.query['age'][0],
-                            'premium_user' : req.query['premium_user'][0]
-                            }
+    self._users.append({'id': user_id,
+                        'name': req.query['name'][0],
+                        'address' : req.query['address'][0],
+                        'age': req.query['age'][0],
+                        'premium_user' : req.query['premium_user'][0]
+                        })
     return Response(204, 'Created')
   
   def handle_get_users(self, req):
@@ -209,7 +220,7 @@ class MyHTTPServer:
 
     if resp.body:
       wfile.write(resp.body)
-
+      
     wfile.flush()
     wfile.close()
 
@@ -219,6 +230,7 @@ class MyHTTPServer:
       reason = err.reason
       body = (err.body or err.reason).encode('utf-8')
     except:
+      traceback.print_exc()
       status = 500
       reason = b'Internal Server Error'
       body = b'Internal Server Error'
@@ -236,4 +248,5 @@ if __name__ == '__main__':
   try:
     serv.serve_forever()
   except KeyboardInterrupt:
+    traceback.print_exc()
     pass
