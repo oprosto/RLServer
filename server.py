@@ -151,8 +151,8 @@ class MyHTTPServer:
     
     req_line = str(raw, 'iso-8859-1')
     req_line = req_line.rstrip('\r\n')
-    words = req_line.split()            # разделяем по пробелу
-    if len(words) != 3:                 # и ожидаем ровно 3 части
+    words = req_line.split()            
+    if len(words) != 3:                 
       raise Exception('Malformed request line')
 
     method, target, ver = words
